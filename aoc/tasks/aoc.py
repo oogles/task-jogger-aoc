@@ -3,7 +3,7 @@ from pathlib import Path
 
 from jogger.tasks import Task, TaskError
 
-from ..utils.setup import find_last_day, get_puzzle_name
+from ..utils.setup import find_last_day, get_puzzle_input, get_puzzle_name
 
 
 class AdventOfCodeTask(Task):
@@ -97,17 +97,31 @@ class AdventOfCodeTask(Task):
             raise SystemExit()
         
         self.stdout.write(f'\n--- Day {day}: {puzzle_name} ---', style='label')
-        self.stdout.write('Creating template...')
         
-        # Create the directory and an `__init__.py` and `solvers.py` file
+        # Attempt to fetch input data first, so if any issues are encountered
+        # the template isn't left partially created
+        input_data = None
+        session_cookie = self.settings.get('session_cookie')
+        if not session_cookie:
+            self.stdout.write(
+                'Not fetching puzzle input: No session cookie configured.',
+                style='warning'
+            )
+        else:
+            self.stdout.write('Fetching puzzle input...')
+            input_data = get_puzzle_input(year, day, session_cookie)
+        
+        # Create the directory and template content
+        self.stdout.write('Creating template...')
         puzzle_dir.mkdir(parents=True)
         Path(puzzle_dir, '__init__.py').touch()
         
+        if input_data:
+            with Path(puzzle_dir, 'input').open('w') as f:
+                f.write(input_data)
+        
         solvers_template = Path(puzzle_dir, 'solvers.py')
         solvers_template.touch()
-        
-        # TODO: Populate the template, fetch input
-        # self.stdout.write('Fetching puzzle input...')
         
         self.stdout.write('Done')
         self.stdout.write(f'\nTemplate created at: {solvers_template}', style='success')

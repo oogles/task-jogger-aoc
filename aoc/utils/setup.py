@@ -70,3 +70,20 @@ def get_puzzle_name(year, day):
         return match.group(1)
     
     return None
+
+
+def get_puzzle_input(year, day, session_cookie):
+    """
+    Return the input data of the puzzle for the given year and day, and for the
+    individual represented by the given session cookie. Assume the day and year
+    have already been validated.
+    """
+    
+    puzzle_url = get_puzzle_url(year, day)
+    input_url = f'{puzzle_url}/input'
+    
+    opener = urllib.request.build_opener()
+    opener.addheaders.append(('Cookie', f'session={session_cookie}'))
+    
+    with opener.open(input_url) as response:
+        return response.read().decode('utf-8')
