@@ -1,8 +1,9 @@
+import datetime
 from pathlib import Path
 
 from jogger.tasks import Task, TaskError
 
-from ..utils.setup import find_last_day
+from ..utils.setup import find_last_day, get_puzzle_name
 
 
 class AdventOfCodeTask(Task):
@@ -44,6 +45,10 @@ class AdventOfCodeTask(Task):
         # TODO: Run solver/s
         self.stdout.write(f'Running solvers for day {day}...', style='label')
     
+    def get_year(self):
+        
+        return self.settings.get('year', datetime.date.today().year)
+    
     def get_day(self):
         
         day = self.kwargs['day']
@@ -55,13 +60,12 @@ class AdventOfCodeTask(Task):
             except ValueError:
                 raise TaskError(f'Day must be provided as an integer.')
         else:
-            # No explicit day is given, so find last day in `solutions/`
-            # directory and increment
+            # No explicit day is given, so find last day in the `solutions/`
+            # directory and increment if need be
             solutions_dir = Path(project_dir, 'solutions')
             day = find_last_day(solutions_dir)
             
             if self.kwargs['next']:
-                # Initialise the next day
                 day += 1
             
             if not day:
@@ -73,21 +77,27 @@ class AdventOfCodeTask(Task):
         if not 1 <= day <= 25:
             raise TaskError(f'Invalid day ({day}). Must be between 1-25.')
         
-        # TODO: Check the day's puzzle has been unlocked
-        
         return day
     
     def initialise_puzzle(self, day, puzzle_dir):
         
-        if not puzzle_dir.exists():
-            try:
-                answer = input(f'No puzzle solvers for day {day} exist. Create them now [y/N]? ')
-            except KeyboardInterrupt:
-                answer = None  # no
-            
-            if answer.lower() != 'y':
-                self.stdout.write('Nothing to do.')
-                raise SystemExit()
+        year = self.get_year()
+        
+        puzzle_name = get_puzzle_name(year, day)
+        if not puzzle_name:
+            raise TaskError(f'Puzzle for day {day} has not been unlocked.')
+        
+        try:
+            answer = input(f'No puzzle solvers for day {day} exist. Create them now [y/N]? ')
+        except KeyboardInterrupt:
+            answer = None  # no
+        
+        if answer.lower() != 'y':
+            self.stdout.write('Nothing to do.')
+            raise SystemExit()
+        
+        self.stdout.write(f'\n--- Day {day}: {puzzle_name} ---', style='label')
+        self.stdout.write('Creating template...')
         
         # Create the directory and an `__init__.py` and `solvers.py` file
         puzzle_dir.mkdir(parents=True)
@@ -97,5 +107,7 @@ class AdventOfCodeTask(Task):
         solvers_template.touch()
         
         # TODO: Populate the template, fetch input
+        # self.stdout.write('Fetching puzzle input...')
         
-        self.stdout.write(f'Created solvers template: {solvers_template}', style='success')
+        self.stdout.write('Done')
+        self.stdout.write(f'\nTemplate created at: {solvers_template}', style='success')
