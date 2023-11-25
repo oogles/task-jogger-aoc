@@ -15,9 +15,9 @@ class AdventOfCodeTask(Task):
     def add_arguments(self, parser):
         
         # The `day` and `next` arguments are mutually exclusive
-        group = parser.add_mutually_exclusive_group()
+        day_group = parser.add_mutually_exclusive_group()
         
-        group.add_argument(
+        day_group.add_argument(
             'day',
             nargs='?',
             help=(
@@ -27,10 +27,34 @@ class AdventOfCodeTask(Task):
             )
         )
         
-        group.add_argument(
+        day_group.add_argument(
             '-n', '--next',
             action='store_true',
             help='Create a template subdirectory for the next day without one.'
+        )
+        
+        # All remaining arguments are also effectively mutually exclusive with
+        # --next, but are simply ignored if --next is provided
+        
+        parser.add_argument(
+            '-s', '--sample',
+            action='store_true',
+            help='Run the solver/s using sample data instead of the full input data.'
+        )
+        
+        # The `part1` and `part2` arguments are mutually exclusive with each
+        # other. If both parts should be run, neither argument should be given.
+        part_group = parser.add_mutually_exclusive_group()
+        part_group.add_argument(
+            '-1', '--part1',
+            action='store_true',
+            help='Run the solver for part 1 of the puzzle only.'
+        )
+        
+        part_group.add_argument(
+            '-2', '--part2',
+            action='store_true',
+            help='Run the solver for part 2 of the puzzle only.'
         )
     
     def handle(self, **options):
@@ -42,8 +66,7 @@ class AdventOfCodeTask(Task):
             self.initialise_puzzle(day, puzzle_dir)
             return
         
-        # TODO: Run solver/s
-        self.stdout.write(f'Running solvers for day {day}...', style='label')
+        self.run_solvers(day)
     
     def get_year(self):
         
@@ -125,3 +148,41 @@ class AdventOfCodeTask(Task):
         
         self.stdout.write('Done')
         self.stdout.write(f'\nTemplate created at: {solvers_template}', style='success')
+    
+    def run_solvers(self, day):
+        
+        run_part1 = True
+        run_part2 = True
+        
+        title = f'Solving: Day {day}'
+        
+        if self.kwargs['part1']:
+            title = f'{title} (part 1)'
+            run_part2 = False
+        elif self.kwargs['part2']:
+            title = f'{title} (part 2)'
+            run_part1 = False
+        
+        # Style the title and surrounding dashes manually (rather than using
+        # `style='label'` on the stdout.write() call) so that the sample data
+        # warning, if added, doesn't cancel the styles part way through the line
+        title = self.styler.label(title)
+        dashes = self.styler.label('---')
+        
+        sample = self.kwargs['sample']
+        if sample:
+            title = f'{title} {self.styler.warning("[sample data]")}'
+        
+        self.stdout.write(f'{dashes} {title} {dashes}')
+        
+        self.stdout.write(f'\nProcessing input data...')
+        
+        if run_part1:
+            self.stdout.write('\nRunning part 1 solver...')
+            result = None
+            self.stdout.write(f'Result: {result}')
+        
+        if run_part2:
+            self.stdout.write('\nRunning part 2 solver...')
+            result = None
+            self.stdout.write(f'Result: {result}')
