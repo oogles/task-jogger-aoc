@@ -53,10 +53,17 @@ def get_puzzle_name(year, day):
         with urllib.request.urlopen(url) as response:
             content = response.read()
     except urllib.error.HTTPError as e:
-        if e.code == 404:
-            raise TaskError('Invalid puzzle URL. Did you configure a valid year?')
+        # Handle 404s, allow other status codes to propagate
+        if e.code != 404:
+            raise
         
-        raise
+        # Pages may 404 if they are completely invalid, or if the puzzle
+        # has not yet been unlocked. Locked puzzles return more content
+        # than the generic "404 Not Found" message included on truly
+        # invalid pages, so use that to distinguish between the two.
+        content = e.read()
+        if 'not found' in content.decode('utf-8').lower():
+            raise TaskError('Invalid puzzle URL. Did you configure a valid year?')
     
     match = PUZZLE_NAME_RE.search(content.decode('utf-8'))
     if match:
