@@ -59,14 +59,15 @@ class AdventOfCodeTask(Task):
     
     def handle(self, **options):
         
-        day = self.get_day()
+        self.year = self.get_year()
+        self.day = day = self.get_day()
         
         puzzle_dir = Path(self.conf.project_dir, 'solutions', f'day{day:02d}')
         if not puzzle_dir.exists():
-            self.initialise_puzzle(day, puzzle_dir)
+            self.initialise_puzzle(puzzle_dir)
             return
         
-        self.run_solvers(day)
+        self.run_solvers()
     
     def get_year(self):
         
@@ -102,9 +103,25 @@ class AdventOfCodeTask(Task):
         
         return day
     
-    def initialise_puzzle(self, day, puzzle_dir):
+    def fetch_input_data(self):
         
-        year = self.get_year()
+        input_data = None
+        session_cookie = self.settings.get('session_cookie')
+        if not session_cookie:
+            self.stdout.write(
+                'Not fetching puzzle input: No session cookie configured.',
+                style='warning'
+            )
+        else:
+            self.stdout.write('Fetching puzzle input...')
+            input_data = get_puzzle_input(self.year, self.day, session_cookie)
+        
+        return input_data
+    
+    def initialise_puzzle(self, puzzle_dir):
+        
+        year = self.year
+        day = self.day
         
         puzzle_name = get_puzzle_name(year, day)
         if not puzzle_name:
@@ -123,16 +140,7 @@ class AdventOfCodeTask(Task):
         
         # Attempt to fetch input data first, so if any issues are encountered
         # the template isn't left partially created
-        input_data = None
-        session_cookie = self.settings.get('session_cookie')
-        if not session_cookie:
-            self.stdout.write(
-                'Not fetching puzzle input: No session cookie configured.',
-                style='warning'
-            )
-        else:
-            self.stdout.write('Fetching puzzle input...')
-            input_data = get_puzzle_input(year, day, session_cookie)
+        input_data = self.fetch_input_data()
         
         # Create the directory and template content
         self.stdout.write('Creating template...')
@@ -140,8 +148,7 @@ class AdventOfCodeTask(Task):
         Path(puzzle_dir, '__init__.py').touch()
         
         if input_data:
-            with Path(puzzle_dir, 'input').open('w') as f:
-                f.write(input_data)
+            Path(puzzle_dir, 'input').write_text(input_data)
         
         solvers_template = Path(puzzle_dir, 'solvers.py')
         solvers_template.touch()
@@ -149,8 +156,9 @@ class AdventOfCodeTask(Task):
         self.stdout.write('Done')
         self.stdout.write(f'\nTemplate created at: {solvers_template}', style='success')
     
-    def run_solvers(self, day):
+    def run_solvers(self):
         
+        day = self.day
         run_part1 = True
         run_part2 = True
         
