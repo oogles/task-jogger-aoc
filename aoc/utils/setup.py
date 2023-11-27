@@ -1,5 +1,6 @@
 import re
 import urllib.request
+from pathlib import Path
 
 from jogger.tasks import TaskError
 
@@ -33,25 +34,19 @@ def find_last_day(solutions_dir):
     return max_day
 
 
-def get_puzzle_url(year, day):
+def make_puzzle_request(url, opener=None):
     """
-    Return the URL for the puzzle input for the given year and day.
-    """
-    
-    return f'{AOC_BASE_URL}/{year}/day/{day}'
-
-
-def get_puzzle_name(year, day):
-    """
-    Return the title of the puzzle for the given year and day, if it has been
-    unlocked. Otherwise return None.
+    Make a request to the given Advent of Code puzzle URL and return the
+    response content. Handle 404 responses, differentiating between locked
+    puzzles and truly invalid URLs. Return None if the puzzle is locked.
     """
     
-    url = get_puzzle_url(year, day)
+    if not opener:
+        opener = urllib.request.build_opener()
     
     try:
-        with urllib.request.urlopen(url) as response:
-            content = response.read()
+        with opener.open(url) as response:
+            return response.read().decode('utf-8')
     except urllib.error.HTTPError as e:
         # Handle 404s, allow other status codes to propagate
         if e.code != 404:
@@ -64,26 +59,69 @@ def get_puzzle_name(year, day):
         content = e.read()
         if 'not found' in content.decode('utf-8').lower():
             raise TaskError('Invalid puzzle URL. Did you configure a valid year?')
-    
-    match = PUZZLE_NAME_RE.search(content.decode('utf-8'))
-    if match:
-        return match.group(1)
-    
-    return None
+        
+        return None  # a locked puzzle
 
 
-def get_puzzle_input(year, day, session_cookie):
+class Puzzle:
     """
-    Return the input data of the puzzle for the given year and day, and for the
-    individual represented by the given session cookie. Assume the day and year
-    have already been validated.
+    An Advent of Code puzzle for a specific year and day. Handles requesting
+    remote puzzle data and creating the local files necessary for writing
+    puzzle solvers.
     """
     
-    puzzle_url = get_puzzle_url(year, day)
-    input_url = f'{puzzle_url}/input'
+    def __init__(self, solutions_dir, year, day):
+        
+        self.year = year
+        self.day = day
+        
+        self.url = f'{AOC_BASE_URL}/{year}/day/{day}'
+        self.directory = Path(solutions_dir, f'day{day:02d}')
     
-    opener = urllib.request.build_opener()
-    opener.addheaders.append(('Cookie', f'session={session_cookie}'))
+    def fetch_title(self):
+        """
+        Return the title of the puzzle by inspecting its webpage, if it has
+        been unlocked. Otherwise, return None.
+        """
+        
+        content = make_puzzle_request(self.url)
+        
+        if content:
+            match = PUZZLE_NAME_RE.search(content)
+            if match:
+                return match.group(1)
+        
+        return None
     
-    with opener.open(input_url) as response:
-        return response.read().decode('utf-8')
+    def fetch_input(self, session_cookie):
+        """
+        Download and return the input data of the puzzle for the individual
+        represented by the given session cookie.
+        """
+        
+        opener = urllib.request.build_opener()
+        opener.addheaders.append(('Cookie', f'session={session_cookie}'))
+        
+        url = f'{self.url}/input'
+        
+        return make_puzzle_request(url, opener)
+    
+    def create_template(self, input_data=None):
+        """
+        Create and populate the directory for this puzzle. Create a file for
+        the input data, if any is given, and a file for the puzzle solvers.
+        Return the path to the latter.
+        """
+        
+        base_dir = self.directory
+        
+        base_dir.mkdir(parents=True)
+        Path(base_dir, '__init__.py').touch()
+        
+        if input_data:
+            Path(base_dir, 'input').write_text(input_data)
+        
+        solvers_file = Path(base_dir, 'solvers.py')
+        solvers_file.touch()
+        
+        return solvers_file

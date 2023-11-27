@@ -3,7 +3,7 @@ from pathlib import Path
 
 from jogger.tasks import Task, TaskError
 
-from ..utils.setup import find_last_day, get_puzzle_input, get_puzzle_name
+from ..utils.setup import Puzzle, find_last_day
 
 
 class AdventOfCodeTask(Task):
@@ -59,15 +59,16 @@ class AdventOfCodeTask(Task):
     
     def handle(self, **options):
         
-        self.year = self.get_year()
-        self.day = day = self.get_day()
+        year = self.get_year()
+        day = day = self.get_day()
+        solutions_dir = Path(self.conf.project_dir, 'solutions')
         
-        puzzle_dir = Path(self.conf.project_dir, 'solutions', f'day{day:02d}')
-        if not puzzle_dir.exists():
-            self.initialise_puzzle(puzzle_dir)
+        puzzle = Puzzle(solutions_dir, year, day)
+        if not puzzle.directory.exists():
+            self.initialise_puzzle(puzzle)
             return
         
-        self.run_solvers()
+        self.run_solvers(puzzle)
     
     def get_year(self):
         
@@ -103,7 +104,7 @@ class AdventOfCodeTask(Task):
         
         return day
     
-    def fetch_input_data(self):
+    def fetch_input_data(self, puzzle):
         
         input_data = None
         session_cookie = self.settings.get('session_cookie')
@@ -114,17 +115,16 @@ class AdventOfCodeTask(Task):
             )
         else:
             self.stdout.write('Fetching puzzle input...')
-            input_data = get_puzzle_input(self.year, self.day, session_cookie)
+            input_data = puzzle.fetch_input(session_cookie)
         
         return input_data
     
-    def initialise_puzzle(self, puzzle_dir):
+    def initialise_puzzle(self, puzzle):
         
-        year = self.year
-        day = self.day
+        day = puzzle.day
         
-        puzzle_name = get_puzzle_name(year, day)
-        if not puzzle_name:
+        puzzle_title = puzzle.fetch_title()
+        if not puzzle_title:
             raise TaskError(f'Puzzle for day {day} has not been unlocked.')
         
         try:
@@ -136,33 +136,24 @@ class AdventOfCodeTask(Task):
             self.stdout.write('Nothing to do.')
             raise SystemExit()
         
-        self.stdout.write(f'\n--- Day {day}: {puzzle_name} ---', style='label')
+        self.stdout.write(f'\n--- Day {day}: {puzzle_title} ---', style='label')
         
         # Attempt to fetch input data first, so if any issues are encountered
         # the template isn't left partially created
-        input_data = self.fetch_input_data()
+        input_data = self.fetch_input_data(puzzle)
         
         # Create the directory and template content
         self.stdout.write('Creating template...')
-        puzzle_dir.mkdir(parents=True)
-        Path(puzzle_dir, '__init__.py').touch()
-        
-        if input_data:
-            Path(puzzle_dir, 'input').write_text(input_data)
-        
-        solvers_template = Path(puzzle_dir, 'solvers.py')
-        solvers_template.touch()
+        solvers_file = puzzle.create_template(input_data)
         
         self.stdout.write('Done')
-        self.stdout.write(f'\nTemplate created at: {solvers_template}', style='success')
+        self.stdout.write(f'\nTemplate created at: {solvers_file}', style='success')
     
-    def run_solvers(self):
+    def run_solvers(self, puzzle):
         
-        day = self.day
+        title = f'Solving: Day {puzzle.day}'
         run_part1 = True
         run_part2 = True
-        
-        title = f'Solving: Day {day}'
         
         if self.kwargs['part1']:
             title = f'{title} (part 1)'
