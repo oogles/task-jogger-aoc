@@ -169,14 +169,24 @@ class AdventOfCodeTask(Task):
         
         self.stdout.write(f'{dashes} {title} {dashes}')
         
-        self.stdout.write(f'\nProcessing input data...')
-        
         if run_part1:
-            self.stdout.write('\nRunning part 1 solver...')
-            result = None
-            self.stdout.write(f'Result: {result}')
+            self.run_part(1, puzzle, sample)
         
         if run_part2:
-            self.stdout.write('\nRunning part 2 solver...')
-            result = None
-            self.stdout.write(f'Result: {result}')
+            self.run_part(2, puzzle, sample)
+    
+    def run_part(self, part, puzzle, sample):
+        
+        self.stdout.write(f'\n-- Part {part} --', style='label')
+        
+        data_type = self.styler.warning('sample') if sample else 'input'
+        self.stdout.write(f'Processing {data_type} data...')
+        # TODO: Read input/sample data
+        
+        self.stdout.write(f'Running solver...')
+        
+        # TODO: Call part function, passing processed input data
+        # TODO: Error if it is not defined
+        result = None
+        
+        self.stdout.write(f'Result: {result}')
