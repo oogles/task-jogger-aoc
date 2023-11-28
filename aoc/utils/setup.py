@@ -9,6 +9,16 @@ PUZZLE_NAME_RE = re.compile(r'<h2>--- Day \d+: (.+) ---</h2>')
 AOC_BASE_URL = 'https://adventofcode.com'
 
 
+def confirm(prompt):
+    
+    try:
+        answer = input(f'{prompt} [y/n]? ')
+    except KeyboardInterrupt:
+        return False  # no
+    
+    return answer.lower() == 'y'
+
+
 def find_last_day(solutions_dir):
     """
     Return an integer representing the last day present as a subdirectory

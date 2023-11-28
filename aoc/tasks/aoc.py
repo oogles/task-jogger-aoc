@@ -3,7 +3,7 @@ from pathlib import Path
 
 from jogger.tasks import Task, TaskError
 
-from ..utils.setup import Puzzle, find_last_day
+from ..utils.setup import Puzzle, confirm, find_last_day
 
 
 class AdventOfCodeTask(Task):
@@ -83,7 +83,7 @@ class AdventOfCodeTask(Task):
             try:
                 day = int(day)
             except ValueError:
-                raise TaskError(f'Day must be provided as an integer.')
+                raise TaskError('Day must be provided as an integer.')
         else:
             # No explicit day is given, so find last day in the `solutions/`
             # directory and increment if need be
@@ -127,12 +127,7 @@ class AdventOfCodeTask(Task):
         if not puzzle_title:
             raise TaskError(f'Puzzle for day {day} has not been unlocked.')
         
-        try:
-            answer = input(f'No puzzle solvers for day {day} exist. Create them now [y/N]? ')
-        except KeyboardInterrupt:
-            answer = None  # no
-        
-        if answer.lower() != 'y':
+        if not confirm(f'No puzzle solvers for day {day} exist. Create them now'):
             self.stdout.write('Nothing to do.')
             raise SystemExit()
         
