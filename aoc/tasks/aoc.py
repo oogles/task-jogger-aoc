@@ -175,15 +175,52 @@ class AdventOfCodeTask(Task):
         if run_part2:
             self.run_part(2, puzzle, sample)
     
+    def verify_input(self, puzzle, part, sample):
+        
+        if not sample:
+            # If a primary input file does not exist, attempt to fetch puzzle
+            # input and create one automatically. If not possible, stop here:
+            # the user will need to manually create the file.
+            if not puzzle.input_path.exists():
+                input_data = self.fetch_input_data(puzzle)
+                if input_data is not None:
+                    puzzle.input_path.write_text(input_data)
+                else:
+                    raise TaskError(
+                        'No puzzle input found. Create an `input` file'
+                        ' manually or configure a session cookie to fetch'
+                        ' the input automatically.'
+                    )
+        else:
+            # If a part-specific sample data file does not exist, prompt the
+            # user to enter the sample data and save it to such a file.
+            path = getattr(puzzle, f'sample{part}_path')
+            if not path.exists():
+                self.stdout.write(f'No part {part} sample data found.')
+                
+                # Part 2 can opt to use the same sample data as part 1 if it exists
+                if part == 2 and puzzle.sample1_path.exists():
+                    if confirm('Use the same sample data as part 1'):
+                        path.write_text(puzzle.sample1_path.read_text())
+                        return
+                
+                input_data = input(f'Enter part {part} sample data: ')
+                path.write_text(input_data)
+    
     def run_part(self, part, puzzle, sample):
         
         self.stdout.write(f'\n-- Part {part} --', style='label')
         
         data_type = self.styler.warning('sample') if sample else 'input'
+        
+        # Ensure input/sample data exists, creating it if necessary, before
+        # reading/processing it to pass to the solver
+        self.verify_input(puzzle, part, sample)
+        
         self.stdout.write(f'Processing {data_type} data...')
         # TODO: Read input/sample data
         
-        self.stdout.write(f'Running solver...')
+        self.stdout.write('Running solver...')
         
         # TODO: Call part function, passing processed input data
         # TODO: Error if it is not defined

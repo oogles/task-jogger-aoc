@@ -87,6 +87,10 @@ class Puzzle:
         
         self.url = f'{AOC_BASE_URL}/{year}/day/{day}'
         self.directory = Path(solutions_dir, f'day{day:02d}')
+        
+        self.input_path = Path(self.directory, 'input')
+        self.sample1_path = Path(self.directory, 'sample1')
+        self.sample2_path = Path(self.directory, 'sample2')
     
     def fetch_title(self):
         """
