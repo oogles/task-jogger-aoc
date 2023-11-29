@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+from time import perf_counter_ns
 
 from jogger.tasks import Task, TaskError
 
@@ -207,6 +208,14 @@ class AdventOfCodeTask(Task):
                 input_data = input(f'Enter part {sample_part} sample data: ')
                 path.write_text(input_data)
     
+    def log_done(self, start_ns, error=False):
+        
+        duration = perf_counter_ns() - start_ns
+        msg = 'error' if error else 'done'
+        style = 'error' if error else None
+        
+        self.stdout.write(f'{msg} [{duration / 1e9:.6f}s]', style=style)
+    
     def run_part(self, part, puzzle, sample):
         
         self.stdout.write(f'\n-- Part {part} --', style='label')
@@ -218,13 +227,28 @@ class AdventOfCodeTask(Task):
         self.verify_input(puzzle, sample_part)
         
         data_type = self.styler.warning('sample') if sample else 'input'
-        self.stdout.write(f'Processing {data_type} data...')
-        input_data = puzzle.read_input_data(sample_part)
+        self.stdout.write(f'Processing {data_type} data... ', ending='')
         
-        self.stdout.write('Running solver...')
+        input_start = perf_counter_ns()
+        try:
+            input_data = puzzle.read_input_data(sample_part)
+        except Exception as e:
+            self.log_done(input_start, error=True)
+            raise
+        else:
+            self.log_done(input_start)
         
-        # TODO: Call part function, passing processed input data
-        # TODO: Error if it is not defined
-        result = None
+        self.stdout.write('Running solver... ', ending='')
         
-        self.stdout.write(f'Result: {result}')
+        solve_start = perf_counter_ns()
+        try:
+            # TODO: Call part function, passing processed input data
+            # TODO: Error if it is not defined
+            solution = None
+        except Exception as e:
+            self.log_done(solve_start, error=True)
+            raise
+        else:
+            self.log_done(solve_start)
+        
+        self.stdout.write(f'\nSolution: {solution}', style='label')
