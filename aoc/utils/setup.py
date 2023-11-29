@@ -1,5 +1,6 @@
 import re
 import urllib.request
+from importlib import import_module
 from pathlib import Path
 
 from jogger.tasks import TaskError
@@ -91,6 +92,19 @@ class Puzzle:
         self.input_path = Path(self.directory, 'input')
         self.sample1_path = Path(self.directory, 'sample1')
         self.sample2_path = Path(self.directory, 'sample2')
+        
+        self._imported_solvers = None
+    
+    @property
+    def solvers_module(self):
+        
+        if self._imported_solvers is None:
+            try:
+                self._imported_solvers = import_module(f'solutions.day{self.day:02d}.solvers')
+            except ModuleNotFoundError:
+                raise TaskError('No solvers module found for day {self.day}.')
+        
+        return self._imported_solvers
     
     def fetch_title(self):
         """
@@ -153,5 +167,9 @@ class Puzzle:
             path = getattr(self, f'sample{sample_part}_path')
         
         content = path.read_text()
+        
+        processor = getattr(self.solvers_module, 'input_processor', None)
+        if processor:
+            content = processor(content)
         
         return content
