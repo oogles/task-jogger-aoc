@@ -139,3 +139,19 @@ class Puzzle:
         solvers_file.touch()
         
         return solvers_file
+    
+    def read_input_data(self, sample_part=None):
+        """
+        Read the content of the appropriate input file and apply the defined
+        processor function (from `solvers.input_processor`) to it, if any.
+        Return the (optionally) processed content.
+        """
+        
+        if not sample_part:
+            path = self.input_path
+        else:
+            path = getattr(self, f'sample{sample_part}_path')
+        
+        content = path.read_text()
+        
+        return content

@@ -175,9 +175,9 @@ class AdventOfCodeTask(Task):
         if run_part2:
             self.run_part(2, puzzle, sample)
     
-    def verify_input(self, puzzle, part, sample):
+    def verify_input(self, puzzle, sample_part):
         
-        if not sample:
+        if not sample_part:
             # If a primary input file does not exist, attempt to fetch puzzle
             # input and create one automatically. If not possible, stop here:
             # the user will need to manually create the file.
@@ -194,31 +194,32 @@ class AdventOfCodeTask(Task):
         else:
             # If a part-specific sample data file does not exist, prompt the
             # user to enter the sample data and save it to such a file.
-            path = getattr(puzzle, f'sample{part}_path')
+            path = getattr(puzzle, f'sample{sample_part}_path')
             if not path.exists():
-                self.stdout.write(f'No part {part} sample data found.')
+                self.stdout.write(f'No part {sample_part} sample data found.')
                 
                 # Part 2 can opt to use the same sample data as part 1 if it exists
-                if part == 2 and puzzle.sample1_path.exists():
+                if sample_part == 2 and puzzle.sample1_path.exists():
                     if confirm('Use the same sample data as part 1'):
                         path.write_text(puzzle.sample1_path.read_text())
                         return
                 
-                input_data = input(f'Enter part {part} sample data: ')
+                input_data = input(f'Enter part {sample_part} sample data: ')
                 path.write_text(input_data)
     
     def run_part(self, part, puzzle, sample):
         
         self.stdout.write(f'\n-- Part {part} --', style='label')
         
-        data_type = self.styler.warning('sample') if sample else 'input'
+        sample_part = None if not sample else part
         
         # Ensure input/sample data exists, creating it if necessary, before
         # reading/processing it to pass to the solver
-        self.verify_input(puzzle, part, sample)
+        self.verify_input(puzzle, sample_part)
         
+        data_type = self.styler.warning('sample') if sample else 'input'
         self.stdout.write(f'Processing {data_type} data...')
-        # TODO: Read input/sample data
+        input_data = puzzle.read_input_data(sample_part)
         
         self.stdout.write('Running solver...')
         
