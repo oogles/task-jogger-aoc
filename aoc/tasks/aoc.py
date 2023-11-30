@@ -4,7 +4,7 @@ from time import perf_counter_ns
 
 from jogger.tasks import Task, TaskError
 
-from ..utils.setup import Puzzle, confirm, find_last_day
+from ..utils.setup import Puzzle, confirm, find_last_day, gather_sample_input
 
 
 class AdventOfCodeTask(Task):
@@ -205,7 +205,11 @@ class AdventOfCodeTask(Task):
                         path.write_text(puzzle.sample1_path.read_text())
                         return
                 
-                input_data = input(f'Enter part {sample_part} sample data: ')
+                self.stdout.write(
+                    f'Enter part {sample_part} sample data below.'
+                    ' You can enter/paste multiple lines. Use Ctrl+D to submit.'
+                )
+                input_data = gather_sample_input()
                 path.write_text(input_data)
     
     def log_done(self, start_ns, error=False):

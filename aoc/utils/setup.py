@@ -20,6 +20,18 @@ def confirm(prompt):
     return answer.lower() == 'y'
 
 
+def gather_sample_input():
+    
+    lines = []
+    try:
+        while True:
+            lines.append(input())
+    except EOFError:
+        pass
+    
+    return '\n'.join(lines)
+
+
 def find_last_day(solutions_dir):
     """
     Return an integer representing the last day present as a subdirectory
