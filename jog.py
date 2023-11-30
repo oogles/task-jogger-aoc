@@ -2,6 +2,7 @@ import os
 import sys
 
 from jogger.tasks import LintTask
+from jogger.tasks._release import ReleaseTask
 
 # Allow absolute import of the `aoc` package, despite it not
 # being installed on the system path
@@ -24,4 +25,5 @@ class RuffLintTask(LintTask):
 tasks = {
     'aoc': AdventOfCodeTask,
     'lint': RuffLintTask,
+    'release': ReleaseTask
 }
