@@ -146,8 +146,11 @@ class Puzzle:
         base_dir.mkdir(parents=True)
         Path(base_dir, '__init__.py').touch()
         
+        input_path = Path(base_dir, 'input')
         if input_data:
-            Path(base_dir, 'input').write_text(input_data)
+            input_path.write_text(input_data)
+        else:
+            input_path.touch()
         
         solvers_file = Path(base_dir, 'solvers.py')
         solvers_file.write_text(solver_template)
