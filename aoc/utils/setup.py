@@ -173,6 +173,22 @@ class Puzzle:
             content = processor(content)
         
         return content
+    
+    def run_solver(self, part, input_data):
+        """
+        Run the solver function for the given part of the puzzle, passing the
+        given input data.
+        """
+        
+        try:
+            solver = getattr(self.solvers_module, f'part{part}')
+        except AttributeError:
+            raise TaskError(f'No solver found for part {part}.')
+        
+        try:
+            return solver(input_data)
+        except NotImplementedError:
+            raise TaskError(f'No solver implemented for part {part}.')
 
 
 solver_template = """from aoc.utils import parsing

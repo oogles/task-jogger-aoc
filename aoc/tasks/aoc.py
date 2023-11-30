@@ -242,9 +242,7 @@ class AdventOfCodeTask(Task):
         
         solve_start = perf_counter_ns()
         try:
-            # TODO: Call part function, passing processed input data
-            # TODO: Error if it is not defined
-            solution = None
+            solution = puzzle.run_solver(part, input_data)
         except Exception as e:
             self.log_done(solve_start, error=True)
             raise
