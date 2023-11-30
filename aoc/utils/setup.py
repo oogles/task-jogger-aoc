@@ -160,7 +160,7 @@ class Puzzle:
     def read_input_data(self, sample_part=None):
         """
         Read the content of the appropriate input file and apply the defined
-        processor function (from `solvers.input_processor`) to it, if any.
+        parser function (from `solvers.input_parser`) to it, if any.
         Return the (optionally) processed content.
         """
         
@@ -171,9 +171,9 @@ class Puzzle:
         
         content = path.read_text()
         
-        processor = getattr(self.solvers_module, 'input_processor', None)
-        if processor:
-            content = processor(content)
+        parser = getattr(self.solvers_module, 'input_parser', None)
+        if parser:
+            content = parser(content)
         
         return content
     
@@ -196,7 +196,7 @@ class Puzzle:
 
 solver_template = """from aoc.utils import parsing
 
-input_processor = parsing.split_lines
+input_parser = parsing.split_lines
 
 
 def part1(input_data):
