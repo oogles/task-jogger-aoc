@@ -232,7 +232,7 @@ class AdventOfCodeTask(Task):
         input_start = perf_counter_ns()
         try:
             input_data = puzzle.read_input_data(sample_part)
-        except Exception as e:
+        except Exception:
             self.log_done(input_start, error=True)
             raise
         else:
@@ -243,7 +243,7 @@ class AdventOfCodeTask(Task):
         solve_start = perf_counter_ns()
         try:
             solution = puzzle.run_solver(part, input_data)
-        except Exception as e:
+        except Exception:
             self.log_done(solve_start, error=True)
             raise
         else:

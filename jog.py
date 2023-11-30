@@ -1,17 +1,27 @@
 import os
 import sys
 
-from jogger.tasks.base import TaskProxy
-from jogger.utils.config import JogConf
+from jogger.tasks import LintTask
 
 # Allow absolute import of the `aoc` package, despite it not
 # being installed on the system path
 path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, path)
 
-from aoc.tasks import AdventOfCodeTask
+from aoc.tasks import AdventOfCodeTask  # noqa: E402
+
+
+class RuffLintTask(LintTask):
+    
+    def handle_python(self, explicit):
+        
+        self.stdout.write('Running ruff...', style='label')
+        result = self.cli('ruff check .')
+        self.outcomes['ruff'] = result.returncode == 0
+        self.stdout.write('')  # newline
 
 
 tasks = {
-    'aoc': AdventOfCodeTask
+    'aoc': AdventOfCodeTask,
+    'lint': RuffLintTask,
 }

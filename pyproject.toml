@@ -1,0 +1,8 @@
+[tool.ruff]
+line-length = 119
+select = ["A", "C90", "E", "F", "I", "S", "W"]
+target-version = "py311"
+ignore = [
+    "W293",  # blank line containing whitespace
+    "A003"   # class attribute shadowing a builtin
+]
