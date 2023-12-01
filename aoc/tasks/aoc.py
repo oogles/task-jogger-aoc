@@ -1,4 +1,5 @@
 import datetime
+import sys
 from pathlib import Path
 from time import perf_counter_ns
 
@@ -59,6 +60,10 @@ class AdventOfCodeTask(Task):
         )
     
     def handle(self, **options):
+        
+        # Put the project path on the Python path to enable importing solver
+        # modules
+        sys.path.insert(0, self.conf.project_dir)
         
         year = self.get_year()
         day = day = self.get_day()
