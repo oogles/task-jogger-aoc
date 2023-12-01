@@ -8,10 +8,12 @@ This project provides a structural template and runner for `Advent of Code <http
 Example Usage
 =============
 
-Assuming a properly `configured <Configuration>`_ project, the following is a typical workflow for solving an Advent of Code puzzle::
+Assuming a properly configured project (see below), the following is a typical workflow for solving an Advent of Code puzzle::
 
     $ jog aoc -n   # create a template for the next day's puzzle
+    
     # edit the day's solvers.py file to implement the solvers
+    
     $ jog aoc -s1  # run part 1 using sample data
     $ jog aoc -1   # run part 1 using full input data
     $ jog aoc -s2  # run part 2 using sample data
