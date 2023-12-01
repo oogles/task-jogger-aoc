@@ -5,6 +5,19 @@ Advent of Code Solution Runner for Python
 This project provides a structural template and runner for `Advent of Code <https://adventofcode.com/>`_ solutions written in Python. It is built on top of `jogger` (https://github.com/oogles/task-jogger).
 
 
+Example Usage
+=============
+
+Assuming a properly `configured <Configuration>`_ project, the following is a typical workflow for solving an Advent of Code puzzle::
+
+    $ jog aoc -n   # create a template for the next day's puzzle
+    # edit the day's solvers.py file to implement the solvers
+    $ jog aoc -s1  # run part 1 using sample data
+    $ jog aoc -1   # run part 1 using full input data
+    $ jog aoc -s2  # run part 2 using sample data
+    $ jog aoc -2   # run part 2 using full input data
+
+
 Installation
 ============
 
@@ -17,8 +30,8 @@ The following dependencies will also be installed:
 * ``jogger``: The underlying task running system. See: https://github.com/oogles/task-jogger.
 
 
-Quickstart
-==========
+Configuration
+=============
 
 Add a ``jog.py`` file including ``AdventOfCodeTask``:
 
@@ -30,7 +43,17 @@ Add a ``jog.py`` file including ``AdventOfCodeTask``:
         'aoc': AdventOfCodeTask
     }
 
-Assuming a task name of ``aoc``, as used in the above example, create a template for solving the next puzzle using::
+
+No further configuration is necessary, but the following settings are available. They can be configured using `any compatible config file <https://task-jogger.readthedocs.io/en/stable/topics/config.html>`_ recognised by ``jogger``.
+
+* ``year``: The year of the Advent of Code challenge being attempted. Controls verifying puzzle availability and downloading puzzle input data. This setting is optional (it defaults to the current year) but recommended. Without it, you can't re-run solutions from previous years, or create new solution templates after December 31 (puzzles will be detected as locked).
+* ``session_cookie``: The value of your cookie for an authenticated session at https://adventofcode.com. Used to download puzzle input, which is unique per user. If not provided, puzzle input cannot be downloaded and must be populated manually. It is **strongly recommended** to put this setting in ``joggerenv.cfg`` and ignore/exclude that file from any version control in use.
+
+
+Usage
+=====
+
+Assuming a task name of ``aoc``, as used in the above configuration example, create a template for solving the next puzzle using::
 
     $ jog aoc --next
     or
@@ -38,8 +61,8 @@ Assuming a task name of ``aoc``, as used in the above example, create a template
 
 This will create a subdirectory for the next day's puzzle that doesn't already have one, using day 1 by default. E.g. ``solutions/day01/``. This subdirectory contains:
 
-* ``solvers.py``: A module containing ``part1()`` and ``part2()`` functions for solving the respective parts of the puzzle (it's up to you to implement these). It also optionally contains an ``input_parser`` function (see `Input parsing`_ below).
-* ``input``: A file to contain the puzzle input. This can be populated automatically if you have a session cookie set (see `Configuration`_ below). Otherwise, it must be populated manually.
+* ``solvers.py``: A module containing ``part1()`` and ``part2()`` functions for solving the respective parts of the puzzle (it's up to you to implement these). It also optionally contains an ``input_parser`` function (see `Input parsing`_).
+* ``input``: A file to contain the puzzle input. This can be populated automatically if you have a session cookie set (see `Configuration`_). Otherwise, it must be populated manually.
 
 Once at least one solver is implemented, the latest puzzle can be run using::
 
@@ -63,20 +86,21 @@ Each part of the puzzle can be run independently using::
     or
     $ jog aoc -2
 
+The above can be combined to run a specific part using sample data::
+
+    $ jog aoc --part1 --sample
+    or
+    $ jog aoc -s1
+
+    $ jog aoc --part2 --sample
+    or
+    $ jog aoc -s2
+
 Finally, you can specify an exact puzzle using the day's number. E.g. for day 12::
 
     $ jog aoc 12
 
 This will create a puzzle subdirectory if it doesn't already exist, and run the solvers within if it does.
-
-
-Configuration
-=============
-
-No configuration is necessary, but the following settings are available. They can be configured using `any compatible config file <https://task-jogger.readthedocs.io/en/stable/topics/config.html>`_ recognised by ``jogger``.
-
-* ``year``: The year of the Advent of Code challenge being attempted. Controls verifying puzzle availability and downloading puzzle input data. This setting is optional (it defaults to the current year) but recommended. Without it, you can't re-run solutions from previous years, or continue to work on puzzles after December 31.
-* ``session_cookie``: The value of your cookie for an authenticated session at https://adventofcode.com. Used to download puzzle input, which is unique per user. If not provided, puzzle input cannot be downloaded and must be populated manually. It is **strongly recommended** to put this setting in ``joggerenv.cfg`` and ignore/exclude that file from any version control in use.
 
 
 Input parsing
