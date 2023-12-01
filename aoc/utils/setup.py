@@ -114,7 +114,7 @@ class Puzzle:
             try:
                 self._imported_solvers = import_module(f'solutions.day{self.day:02d}.solvers')
             except ModuleNotFoundError:
-                raise TaskError('No solvers module found for day {self.day}.')
+                raise TaskError(f'No solvers module found for day {self.day}.')
         
         return self._imported_solvers
     
